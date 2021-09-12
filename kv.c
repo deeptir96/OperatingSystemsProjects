@@ -96,12 +96,13 @@ int main(int argc, char *argv[]) {
 	  break;
 	case 'c': 
 	  //do something
-	  key = atoi(inputs[i][1]);
           if(inputs[i][1] !=NULL || inputs[i][2] != NULL) {
                 printf("Clear Argh bad command\n");
                 break;
           }
-	  remove("key_value.csv");
+	  fp = fopen("key_value.csv", "w");
+	  printf("Cleared all key value pairs");
+	  fclose(fp);
 	  break;
  	case 'd': 
 	  //do something
@@ -112,11 +113,17 @@ int main(int argc, char *argv[]) {
           }
 	  break;
 	case 'a': 
-	  //do something
+	  //prints all the key value pairs
 	  if(inputs[i][1] !=NULL || inputs[i][2] != NULL) {
                 printf("All argh bad command\n");
                 break;
           }
+	  printf("Displaying all key value pairs:\n");
+	  fp = fopen("key_value.csv", "r");
+	  while( getline(&line, &len, fp) != -1 ) {
+	      printf("%s", line);
+          }
+	  fclose(fp);
 	  break;
 	default: 
 	  printf("Bad command\n");
