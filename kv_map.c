@@ -31,6 +31,48 @@ int push_front( Node **head, KeyValue val)
     return success;
 }
 
+/*int delete_node(Node **head, int key) {
+  Node *dNode = malloc(sizeof(Node));
+  dNode = *head;
+  Node *pNode = malloc(sizeof(Node));
+  int success = 0;
+          //pNode = NULL;
+          //strcpy(pNode->val.key,"-1");
+          //pNode->next = dNode;
+  if(dNode != NULL && atoi(dNode->val.key) == key) {
+    *head = dNode->next;
+  }
+  while( dNode != NULL && (atoi(dNode->val.key) != key) && (atoi(dNode->val.key) != -1) ) {
+    printf("Del while\n");
+    pNode = dNode;
+    dNode = dNode->next;
+  }
+  //TODO: add indentation
+          if(dNode == NULL || atoi(dNode->val.key) == -1) {
+            printf("%d not found\n", key);
+          }
+          else if(atoi(dNode->val.key) == key) {
+            printf("Found key to delete\n");
+            if(dNode->next == NULL) {
+              printf("null dnode->next\n");
+            } else {
+              printf("okkayyy");
+              printf("%s\n", dNode->next->val.key);
+            }
+            //means that the first node on list is to be deleted
+          //  if(pNode == NULL) {
+            //  hashtable[hashVal] = dNode->next;
+            //} else {
+            pNode->next = dNode->next;
+            success = 1;
+            //}
+            //free(dNode);
+            //printf("%s,%s\n", n->val.key, n->val.val);
+          }
+          free(dNode);
+          return success;
+}*/
+
 int main(int argc, char *argv[]) {
   //Check num args etc
   int i;
@@ -45,7 +87,7 @@ int main(int argc, char *argv[]) {
 
   KeyValue kv = {.key = "-1"};
   Node *hashtable[100] = {0};//malloc(sizeof(Node));// * 100;//{0};//{initKV, NULL};
-  printf("Hellooo\n");
+  //printf("Hellooo\n");
   for(i = 0; i < 100; i++) {
     Node *currN = malloc(sizeof(Node));
     strcpy(currN->val.key, "-1");
@@ -54,107 +96,118 @@ int main(int argc, char *argv[]) {
     //printf("%s\n", hashtable[i].val.key);
   }
 
-  //for(i = 0; i < 100; i++) {
-    //strcpy(hashtable[i]->val.key, "-1");
-    //printf("%s\n", hashtable[i]->val.key);
-  //}
-
   fp = fopen("key_value_new.csv", "a+");
   int currHash = -1;
   char currKey[10];
-  printf("again\n");
+
+  //Gather inputs
+  //printf("Starting over...\n");
+  int k=0;
+
   while( getline(&line, &len, fp) > 1) {
-    printf("while\n");
-    printf("line %s\n", line);
-    strcpy(currKey, line);
-    char *token = strtok(currKey, ",");
-    char *valToken = strtok(NULL, "\n");
-    printf("Token = %s, valToken = %s\n", token, valToken);
-    currHash = atoi(token) % 100;
-    printf("while2\n");
-    strcpy(kv.key, token);
-    strcpy(kv.val, valToken);
-    if(atoi(hashtable[currHash]->val.key) == -1) {
-      printf("while if\n");
-      push_front(&hashtable[currHash], kv);
-    } else {
-      printf("while else\n");
-      Node *prev = malloc(sizeof(Node));
-      Node *tempHead = malloc(sizeof(Node));
-      tempHead = hashtable[currHash];
-      printf("while else 1\n");
-      int isTempHeadNull = 0;
-      if(tempHead != NULL){
-        isTempHeadNull = 1;
-        printf("TempHead !NULL\n");
-      }
-      while(tempHead != NULL //&& tempHead->val != NULL
-       && atoi(tempHead->val.key) != -1
-       && strcmp(tempHead->val.key, inputs[i][1]) != -1) {
-         printf("while else while\n");
-         prev = tempHead;
-         tempHead = tempHead->next;
-      }
-      if(tempHead != NULL //&& tempHead->val != NULL 
-        && strcmp(tempHead->val.key, inputs[i][1]) == 0) {
-         printf("while else if\n");
-         strcpy(tempHead->val.val, inputs[i][2]);
+    //printf("while\n");
+      //printf("line %s\n", line);
+      strcpy(currKey, line);
+      char *token = strtok(currKey, ",");
+      char *valToken = strtok(NULL, "\n");
+      //printf("Token = %s, valToken = %s\n", token, valToken);
+      currHash = atoi(token) % 100;
+      //printf("Currhash = %d\n", currHash);
+    //printf("while2\n");
+      strcpy(kv.key, token);
+      strcpy(kv.val, valToken);
+      if(atoi(hashtable[currHash]->val.key) == -1) {
+       
+       push_front(&hashtable[currHash], kv);
+       //printf("while if\n");
       } else {
-         printf("while else else\n");  
-         push_front(&hashtable[currHash], kv);
+          //printf("while else\n");
+      //Node *prev = malloc(sizeof(Node));
+          Node *tempHead = malloc(sizeof(Node));
+          tempHead = hashtable[currHash];
+    //      printf("while else 1\n");
+      //int isTempHeadNull = 0;
+          if(tempHead != NULL){
+        //isTempHeadNull = 1;
+    //        printf("TempHead !NULL\n");
+          }
+    //      printf("whatattt %s, token %s\n", tempHead->val.key, token);
+          while(tempHead != NULL //&& tempHead->val != NULL
+            && atoi(tempHead->val.key) != -1
+       //changed from -1 to 0
+           && strcmp(tempHead->val.key, token) != 0) {
+         
+    //        printf("while else while\n");
+         //prev = tempHead;
+            tempHead = tempHead->next;
+          }
+          //if(tempHead != NULL //&& tempHead->val != NULL 
+           // && strcmp(tempHead->val.key, token) == 0) {
+           // printf("while else if\n");
+           // strcpy(tempHead->val.val, inputs[i][2]);
+          //} else {
+      //      printf("while else else\n");  
+            push_front(&hashtable[currHash], kv);
+          //}
       }
     }
-  }
+
+    //printf("Finished reading file\n");
+  
   fclose(fp);
 
   for(i = 1; i < argc; i++) {
+    //inputs[i] = malloc
+    //printf("Arg number %d\n", i);
+    //printf("Args i %s\n", argv[i]);
     int k=0;
     while( (inp = strsep(&argv[i], ",")) != NULL) {
-        if(k == 3) {
-		printf("Invalid number of arguments/bad command");
-		break;
+
+      if(k == 3) {
+		    printf("Invalid number of arguments/bad command");
+		    break;
 		//Handle this somehow outside as well
-	}
-    	inputs[i][k++] = inp;
+	    }
+    	inputs[i][k] = inp;
+      //printf("K = %d",k);
+      k++;
     }
+   // printf("Inppppss %s\n", inputs[i][0]);
+      //printf("Inppppss %s\n", inputs[i][1]);
+      //printf("Inppppss %s\n", inputs[i][2]);
     if(k > 3) {
      printf("Bad command\n");
     }
+    
     char command = (char) inputs[i][0][0];
-    int hashVal = atoi(inputs[i][1]) % 100;
-    printf("Before command\n");
+    int hashVal;
+    //printf("Fetching command %c\n", command);
+    //printf("Before command\n");
     switch(command) {
         case 'p':
-          printf("Put 1\n");
-          //KeyValue kv = {"-1", "Random"}; 
-          //= { .key = atoi(inputs[i][1]), .val = inputs[i][2][0] };
+        //  printf("Putting");
+          if(inputs[i][1] == NULL || inputs[i][2] == NULL) {
+		        printf("Bad command\n");
+		        break;
+	        }
+          printf("inp1 %s, inp2 %s\n", inputs[i][1], inputs[i][2]);
+          hashVal = atoi(inputs[i][1]) % 100;
           strcpy(kv.key, inputs[i][1]);
           strcpy(kv.val, inputs[i][2]);
           //printf
           if(/*hashtable[hashVal].val != NULL && */ atoi(hashtable[hashVal]->val.key) == -1) {
-            printf("put if\n");
+        
             push_front(&hashtable[hashVal], kv);
-            //Node *putNode = malloc(sizeof(Node));
-            //int success = putNode != NULL;
-            //if ( success )
-            //{
-//              putNode->val = 348;
-  //            putNode->next = hashtable[hashVal];
-   //           hashtable[hashVal] = putNode;
-            //}
-            //else {
-              //printf("Malloc errors\n");
-            //}
+          
           }
           else {
-            printf("put else\n");
-            Node *prev = malloc(sizeof(Node));
+            
             Node *tempHead = malloc(sizeof(Node));
             tempHead = hashtable[hashVal];
             while(tempHead != NULL //&& tempHead->val != NULL
              && atoi(tempHead->val.key) != -1
              && strcmp(tempHead->val.key, inputs[i][1]) != 0) {
-              prev = tempHead;
+              //prev = tempHead;
               tempHead = tempHead->next;
             }
             if(tempHead != NULL //&& tempHead->val != NULL 
@@ -163,31 +216,130 @@ int main(int argc, char *argv[]) {
             } else {
               push_front(&hashtable[hashVal], kv);
             }
-            //Node *newVal = malloc(sizeOf(Node));
-            //newVal->val = inputs[i][2][0];
-            //newVal->next = tempHead;
+            
           }
-          printf("Values stored: %s\n", hashtable[hashVal]->val.key);
+         // printf("Values stored: %s\n", hashtable[hashVal]->val.key);
           //while(/*&hashtable[hashVal]->val != NULL &&*/ atoi(hashtable[hashVal]->val.key) != -1) {
             //printf("%s,%s\n",hashtable[hashVal]->val.key, hashtable[hashVal]->val.val);
-         // }
-        break;
+          //}
+          break;
         case 'g':
-        break;
-        case 'd':
-        break;
-        case 'c':
-        break;
-        case 'a':
-        break;
-        default: printf("Bad command\n");
-        break;
+          //TODO: add code for input correctness etc
+          hashVal = atoi(inputs[i][1]) % 100;
+          printf("");
+          Node *n = malloc(sizeof(Node));
+          n = hashtable[hashVal];
+          while( (atoi(n->val.key) != atoi(inputs[i][1])) && (atoi(n->val.key) != -1)) {
+          //   printf("Get while: node %s, inp %s\n", n->val.key, inputs[i][1]);
+            n = n->next;
+          }
+          if(atoi(n->val.key) == -1) {
+            printf("%s not found\n", inputs[i][1]);
+          }
+          else if(atoi(n->val.key) == atoi(inputs[i][1])) {
+           //    printf("Value found, searching for key %s\n", inputs[i][1]);
+           //  printf("Value is %s\n", n->val.key);
+            if(n->val.val == NULL) {
+              printf("val is null\n");
+            } else {
 
+            }
+            printf("%s,%s\n", n->val.key, n->val.val);
+          }
+          break;
+        case 'd':
+          printf("");
+          hashVal = atoi(inputs[i][1]) % 100;
+          //delete_node(&hashtable[hashVal], atoi(inputs[i][1]));
+          Node *dNode = malloc(sizeof(Node));
+          dNode = hashtable[hashVal];
+          Node *pNode = malloc(sizeof(Node));
+          //pNode = NULL;
+          strcpy(pNode->val.key,"-1");
+          pNode->next = dNode;
+          if(dNode != NULL && atoi(dNode->val.key) == atoi(inputs[i][1])){
+          //      printf("lololol\n");
+            hashtable[hashVal] = dNode->next;
+            break;
+          }
+          while( (atoi(dNode->val.key) != atoi(inputs[i][1])) && (atoi(dNode->val.key) != -1) ) {
+          //      printf("Del while\n");
+            pNode = dNode;
+            dNode = dNode->next;
+          }
+          if(atoi(dNode->val.key) == -1) {
+          //      printf("%s not found\n", inputs[i][1]);
+          }
+          else if(atoi(dNode->val.key) == atoi(inputs[i][1])) {
+              //      printf("Found key to delete\n");
+            if(dNode->next == NULL) {
+            //        printf("null dnode->next\n");
+            } else {
+            //        printf("okkayyy");
+            //         printf("%s\n", dNode->next->val.key);
+            }
+            //means that the first node on list is to be deleted
+            //if(pNode == NULL) {
+              //hashtable[hashVal] = dNode->next;
+            //} else {
+              pNode->next = dNode->next;
+            //}
+            //free(dNode);
+            //printf("%s,%s\n", n->val.key, n->val.val);
+          }
+          free(dNode);
+          break;
+        case 'c':
+          //if(inputs[i][1] !=NULL) { 
+            //printf("Inputs[1] %s\n",inputs[i][1]);
+                //printf("All Bad command\n");
+                //break;
+          //}
+          //if(inputs[i][2] != NULL) {
+            //printf("Inputs[2] %s\n",inputs[i][2]);
+            //break;
+          //}
+          //printf("Clearing\n");
+          //int itr;
+          fp = fopen("key_value_new.csv", "w");
+          fclose(fp);
+          for(i = 0; i < 100; i++) {
+            Node *cNode = malloc(sizeof(Node));
+            strcpy(cNode->val.key, "-1");
+            hashtable[i] = cNode;
+            //strcpy(hashtable[i]->val.key, "-1");
+            //printf("%s\n", hashtable[i].val.key);
+          }
+         // printf("Finished clearing\n");
+          break;
+        case 'a':
+          //if(inputs[i][1] !=NULL) { 
+           // printf("Inputs[1] %s\n",inputs[i][1]);
+                //printf("All Bad command\n");
+                //break;
+          //}
+          //if(inputs[i][2] != NULL) {
+            //printf("Inputs[2] %s\n",inputs[i][2]);
+            //break;
+          //}
+          //printf("printing all\n");
+          for(i = 0; i < 100; i++) {
+            Node *aNode = malloc(sizeof(Node));
+            aNode = hashtable[i];
+            while(aNode != NULL && (atoi(aNode->val.key) != -1) ) {
+              printf("%s,%s\n", aNode->val.key, aNode->val.val);
+              aNode = aNode->next;
+            }
+          }
+          //printf("Printed all");
+          break;
+        default: printf("Bad command\n");
+          break;
     }
-    
+    //printf("Finished switch\n");
   }
   fp =  fopen("key_value_new.csv", "w");
-  printf("Let's put in file\n");
+  //printf("Let's put in file\n");
   for(i = 0; i < 100; i++) {
     Node *currNode = hashtable[i];
     //printf("currnode stuff: %s,%s\n", currNode->val.key, currNode->val.val);
