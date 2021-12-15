@@ -1,0 +1,26 @@
+import sys, os, shutil
+
+project=sys.argv[1]
+handin="/u/c/s/cs537-1/handin/"
+dest="/u/c/s/cs537-1/ta/handin/" + project + "/"
+provided="/u/c/s/cs537-1/ta/provided/" + project + "/"
+provided_rel="../../../provided/" + project + "/"
+
+shutil.rmtree(dest)
+
+if not os.path.exists(dest):
+   os.makedirs(dest)
+
+for uname in os.listdir(handin):
+   print uname
+   shutil.copytree(
+         handin + uname + "/" + project + "/",
+         dest + uname + "/"
+         )
+   for f in os.listdir(provided):
+      #print dest + uname + "/" + f, provided + f
+      if not os.path.exists(dest + uname + "/" + f):
+         os.symlink(provided_rel + f, dest + uname + "/" + f)
+
+
+
