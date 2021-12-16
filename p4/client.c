@@ -6,18 +6,16 @@
 #define BUFFER_SIZE (1000)
 
 extern int sd;
-extern int portNum;
+extern struct sockaddr_in addrSnd;
+
 
 // client code
 int main(int argc, char *argv[]) {
-    struct sockaddr_in addrSnd, addrRcv;
+    struct sockaddr_in addrRcv;//, addrSnd;
     
     int serverPort = atoi(argv[1]);
-    sd = UDP_Open(20100);
-    int mfs_rc = MFS_Init("localhost", serverPort);
-    printf("sd =  %d, port = %d, serverPort = %d\n", sd, portNum, serverPort);
-    printf("Random txt %d\n", mfs_rc);
-    int rc = UDP_FillSockAddr(&addrSnd, "localhost", serverPort);
+    int rc = MFS_Init("localhost", serverPort); //UDP_FillSockAddr(&addrSnd, "localhost", serverPort);
+    printf("sd =  %d, serverPort = %d\n", sd, serverPort);
     
     char message[BUFFER_SIZE];
     sprintf(message, "hello world");

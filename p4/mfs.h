@@ -17,9 +17,46 @@ typedef struct __MFS_DirEnt_t {
     int  inum;      // inode number of entry (-1 means entry not used)
 } MFS_DirEnt_t;
 
-typedef struct inode {
-    int id;
+typedef struct __MFS_Inode_t{
+    int size;
+    int type;
+    int data[14]; 
 } MFS_Inode_t;
+
+typedef struct __MFS_InodeMap_t{
+    int inodes[16]; 
+} MFS_Imap_t;
+
+enum MFS_REQUEST_TYPE {
+  REQ_INIT,
+  REQ_LOOKUP,
+  REQ_STAT,
+  REQ_WRITE,
+  REQ_READ,
+  REQ_CREAT,
+  REQ_UNLINK,
+  REQ_RESPONSE,
+  REQ_SHUTDOWN
+};
+
+typedef struct message {
+    enum MFS_REQUEST_TYPE requestType;
+
+    int inum;  // file's inum
+    int pinum; // parent/directory's inum
+    int block; // file's block num
+    int type;  // MFS_DIRECTORY or MFS_REGULAR
+    int size;  // file's bytes
+    
+    char data[MFS_BLOCK_SIZE];
+    char name[28];
+} MFS_message_t;
+//typedef struct inodeMap {
+//    int id;
+//    //list of inode mappings
+//    struct *MFS_Inode_t inodes;
+//} MFS_Inode_t;
+
 
 int MFS_Init(char *hostname, int port);
 int MFS_Lookup(int pinum, char *name);
