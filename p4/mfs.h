@@ -32,15 +32,15 @@ typedef struct __MFS_InodeMap_t{
 } MFS_Imap_t;
 
 enum MFS_REQUEST_TYPE {
-  REQ_INIT,
-  REQ_LOOKUP,
-  REQ_STAT,
-  REQ_WRITE,
-  REQ_READ,
-  REQ_CREAT,
-  REQ_UNLINK,
-  REQ_RESPONSE,
-  REQ_SHUTDOWN
+  REQ_INIT, //0
+  REQ_LOOKUP, //1
+  REQ_STAT, //2
+  REQ_WRITE,//3
+  REQ_READ,//4
+  REQ_CREAT,//5
+  REQ_UNLINK,//6
+  REQ_RESPONSE,//7
+  REQ_SHUTDOWN//8
 };
 
 typedef struct message {
