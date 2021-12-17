@@ -210,6 +210,7 @@ int server_write(int inum, char* buffer, int block){
       lseek(fd, offset, SEEK_SET);
       write(fd, wr_buffer, MFS_BLOCK_SIZE);
       inode_new.size = (block +1) * MFS_BLOCK_SIZE;
+      printf("server_write -> inode type = %d\n", inode.type);
       inode_new.type = inode.type;
       for (int i = 0; i < 14; i++) 
         inode_new.data[i] = inode.data[i]; /* copy data from old nd */
@@ -225,7 +226,7 @@ int server_write(int inum, char* buffer, int block){
     cr->endLog += 4096;
     lseek(fd, offset, SEEK_SET);
     write(fd, wr_buffer, MFS_BLOCK_SIZE);
-    inode_new.size = 0;
+    inode_new.size = 0; //TODO check this
     //    nd_new.type = MFS_DIRECTORY;			  /* gw: tbc */
     inode_new.type = MFS_REGULAR_FILE;		  /* gw: tbc, likely this because write dont apply to dir */
     for (int i = 0; i < 14; i++) inode_new.data[i] = -1; /* copy data from old nd */
@@ -592,17 +593,15 @@ int server_shutdown() {
   exit(0);
 }
 
-// server code
-int main(int argc, char *argv[]) {
-  printf("hiii\n");
-  int port = atoi(argv[1]);
-  //File exists
+int server_init(char *image) {
   cr = (MFS_CheckpointRegion_t *) malloc(sizeof(MFS_CheckpointRegion_t));
-  if(access(argv[2], F_OK) == 0) {
+  if(access(image, F_OK) == 0) {
+    printf("file exists");
+      fd = open(image, O_RDWR, S_IRWXU);
       lseek(fd, 0, SEEK_SET);
       read(fd, cr, sizeof(MFS_CheckpointRegion_t));
   } else {
-      fd = open(argv[2], O_RDWR|O_CREAT, S_IRWXU);
+      fd = open(image, O_RDWR|O_CREAT, S_IRWXU);
   
       if(fd < 0) {
           printf("Cannot create file from image");
@@ -615,57 +614,69 @@ int main(int argc, char *argv[]) {
           cr->imap[i] = -1;
 
       /* write content on the file using lseek and write */
-    lseek(fd, 0, SEEK_SET);
-    write(fd, cr, sizeof(MFS_CheckpointRegion_t));
+      lseek(fd, 0, SEEK_SET);
+      write(fd, cr, sizeof(MFS_CheckpointRegion_t));
 
-    /* create and write to block 0, directory */
-    MFS_DirDataBlock_t dataBlock;
-    for(int i=0; i< 128; i++){
-      strcpy(dataBlock.entries[i].name, "\0");
-      dataBlock.entries[i].inum = -1;
-    }
-    strcpy(dataBlock.entries[0].name, ".\0");
-    dataBlock.entries[0].inum = 0; /* gw: correct */
-    strcpy(dataBlock.entries[1].name, "..\0");
-    dataBlock.entries[1].inum = 0;
+      /* create and write to block 0, directory */
+      MFS_DirDataBlock_t dataBlock;
+      for(int i=0; i< 128; i++){
+        strcpy(dataBlock.entries[i].name, "\0");
+        dataBlock.entries[i].inum = -1;
+      }
+      strcpy(dataBlock.entries[0].name, ".\0");
+      dataBlock.entries[0].inum = 0; /* gw: correct */
+      strcpy(dataBlock.entries[1].name, "..\0");
+      dataBlock.entries[1].inum = 0;
 
-    /* GW: how??? */
-    int offset = cr->endLog;
-    // int step = MFS_BLOCK_SIZE; /* DirDataBlock should be rounded to 4096 */
-    cr->endLog += MFS_BLOCK_SIZE;
-    lseek(fd, offset, SEEK_SET);
-    write(fd, &dataBlock, sizeof(MFS_DirDataBlock_t));
+      /* GW: how??? */
+      int offset = cr->endLog;
+      // int step = MFS_BLOCK_SIZE; /* DirDataBlock should be rounded to 4096 */
+      cr->endLog += MFS_BLOCK_SIZE;
+      lseek(fd, offset, SEEK_SET);
+      write(fd, &dataBlock, sizeof(MFS_DirDataBlock_t));
 
-    MFS_Inode_t rootINode;
-    rootINode.size = 0;
-    rootINode.type = MFS_DIRECTORY;
-    for(int i = 0; i < 14; i++) {
-      rootINode.data[i] = -1;
-    }
-    rootINode.data[0] = offset;
-    
-    offset = cr->endLog;
-    cr->endLog += sizeof(MFS_Inode_t);
-    lseek(fd, offset, SEEK_SET);
-    write(fd, &rootINode, sizeof(MFS_Inode_t));
-    
-    MFS_Imap_t imap;
-    // imap.inodes[0] = offset;
-    for(int i = 0; i < 16; i++) {
-      imap.inodes[i] = -1;
-    }
-    imap.inodes[0] = offset;
+      MFS_Inode_t rootINode;
+      rootINode.size = sizeof(MFS_DirDataBlock_t);
+      rootINode.type = MFS_DIRECTORY;
+      printf("root inode type = %d\n", rootINode.type);
+      for(int i = 0; i < 14; i++) {
+        rootINode.data[i] = -1;
+      }
+      rootINode.data[0] = offset;
+      
+      offset = cr->endLog;
+      cr->endLog += sizeof(MFS_Inode_t);
+      lseek(fd, offset, SEEK_SET);
+      write(fd, &rootINode, sizeof(MFS_Inode_t));
+      
+      MFS_Imap_t imap;
+      // imap.inodes[0] = offset;
+      for(int i = 0; i < 16; i++) {
+        imap.inodes[i] = -1;
+      }
+      imap.inodes[0] = offset;
 
-    offset = cr->endLog;
-    cr->endLog += sizeof(MFS_Imap_t);
-    lseek(fd, offset, SEEK_SET);
-    write(fd, &imap, sizeof(MFS_Imap_t));
+      offset = cr->endLog;
+      cr->endLog += sizeof(MFS_Imap_t);
+      lseek(fd, offset, SEEK_SET);
+      write(fd, &imap, sizeof(MFS_Imap_t));
 
-    cr->imap[0] = offset;
-    lseek(fd, 0, SEEK_SET);
-    write(fd, &cr, sizeof(MFS_CheckpointRegion_t));
+      cr->imap[0] = offset;
+      lseek(fd, 0, SEEK_SET);
+      write(fd, &cr, sizeof(MFS_CheckpointRegion_t));
   }
+  return 0;
+}
 
+// server code
+int main(int argc, char *argv[]) {
+  printf("hiii\n");
+  int port = atoi(argv[1]);
+  //File exists
+  
+  int init = server_init(argv[2]);
+  printf("init = %d", init);
+  
   int sd = UDP_Open(port);
   printf("port = %d\n", port);
   assert(sd > -1);
