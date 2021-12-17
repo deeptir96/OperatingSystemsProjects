@@ -12,17 +12,19 @@ extern int portNum;
 int fd;
 MFS_CheckpointRegion_t *cr;
 int TOTAL_NUM_INODES = 4096;
+int DATA_BLOCK_SIZE = 4096;
 int NUM_INODE_POINTERS = 14;
 int IMAP_PIECE_SIZE = 16;
 int LEN_NAME = 28;
 
-int sanityCheck(int inum, int block){
+int sanityCheckINum(int inum){
   if (inum < 0 || inum >= TOTAL_NUM_INODES) {
     perror("server_write: invalid inum_1");
     return -1;
   }
+}
 
-
+int sanityCheckBlock(int block){
   if( block < 0 || block > NUM_INODE_POINTERS - 1) {
     perror("server_write: invalid block_5");
     return -1;
@@ -30,20 +32,19 @@ int sanityCheck(int inum, int block){
   return 1;
 }
 
-int getOffsets(int inum, MFS_Inode_t *currInode) {
+int findPopulateInode(int inum, MFS_Inode_t *currInode) {
   int imapIdx = inum / 16; /* imap piece num */
 
-  if(cr->imap[imapIdx] == -1){
+  if (cr->imap[imapIdx] == -1) {
     perror("server_read: invalid inum_2");
     return -1;
   }
 
-  int imapOffset =  cr->imap[imapIdx];
-  /* nav to mp */
+  int imapDiskAdd =  cr->imap[imapIdx];
   int iNodeIdx = inum % IMAP_PIECE_SIZE; /* inode index within a imap piece */
 
   MFS_Imap_t imap;
-  lseek(fd, imapOffset, SEEK_SET);
+  lseek(fd, imapDiskAdd, SEEK_SET);
   read(fd, &imap, sizeof(MFS_Imap_t));
   
   int inodeDiskAddress = imap.inodes[iNodeIdx]; /* gw: fp denotes file pointer (location within a file) */
@@ -52,8 +53,6 @@ int getOffsets(int inum, MFS_Inode_t *currInode) {
     return -1;
   }
 
-  /* nav to inode */
-//   MFS_Inode_t currInode;
   lseek(fd, inodeDiskAddress, SEEK_SET);
   read(fd, &currInode, sizeof(MFS_Inode_t));
 
@@ -61,27 +60,17 @@ int getOffsets(int inum, MFS_Inode_t *currInode) {
 }
 
 int server_lookup(int pinum, char *name) {
-    if(pinum < 0 || pinum >= 4096) {
-      perror("server_lookup: invalid pinum_1");
-      return -1;
-    }
+    if (sanityCheck(pinum) == -1) return -1;
 
     MFS_Inode_t currInode;
-    int helper_rc = getOffsets(pinum, &currInode);
+    if (findPopulateInode(pinum, &currInode) == -1) return -1;
   
-    if(helper_rc == -1) {
-        perror("server_read: helper returned invalid");
-        return -1;
-    }
-
-     /* read the datablock pointed by this nd */
-
     char data_buf[MFS_BLOCK_SIZE]; /* gw: use char buffer, (no need free) */
 
     for(int i = 0; i < 14; i++) {
 
         int dataDiskAddress = currInode.data[i];	/* gw: tbc */
-        if(dataDiskAddress == -1) continue;
+        if (dataDiskAddress == -1) continue;
 
         lseek(fd, dataDiskAddress, SEEK_SET);
         read(fd, data_buf, MFS_BLOCK_SIZE);
@@ -92,70 +81,61 @@ int server_lookup(int pinum, char *name) {
             //      if(strcmp(p_de->name,name) == 0)
             if(dirEntry->inum == -1)
                 continue;
-            if(strncmp(dirEntry->name,name,LEN_NAME) == 0)
+            if(strncmp(dirEntry->name, name, LEN_NAME) == 0)
 	            return dirEntry->inum;
         }
     }
-    //  perror("server_lookup: invalid name_5");
     return -1;
 }
 
 int server_read(int inum, char* buffer, int block){
-//   int i=0, j=0;
-  // int imapIdx=0, iNodeIdx=0;
-
-  if (sanityCheck(inum, block) == -1)
-    return -1;
+  if (sanityCheckINum(inum) == -1)return -1;
+  if (sanityCheckBlock(block) == -1)return -1;
 
   MFS_Inode_t currInode;
-  int helper_rc = getOffsets(inum, &currInode);
-  
-  if(helper_rc == -1) {
-    perror("server_read: helper returned invalid");
-    return -1;
-  }
-  /* assert dir */
-  if(!(currInode.type == MFS_REGULAR_FILE || currInode.type == MFS_DIRECTORY)) {
-    perror("server_read: not a valid file_4");
-    return -1;
-  }
-//   int fp_data = currInode.data[0];  /* get fp_data */
-//   int sz_data = currInode.size;
-//   int num_blocks = sz_data / MFS_BLOCK_SIZE + 1;
-
-  if( block < 0 || block > 14) {
-    perror("server_read: invalid block_5");
-    return -1;
-  }
-
-  // char* ip = NULL;
-
+  if (findPopulateInode(inum, &currInode) == -1) return -1;
   int dataDiskAddress = currInode.data[block]; 
   lseek(fd, dataDiskAddress, SEEK_SET);
   read(fd, buffer, MFS_BLOCK_SIZE);
-
   return 0;
 }
 
+void writeDataBlock(int offset, char* wr_buffer){
+    cr->endLog += DATA_BLOCK_SIZE;
+    lseek(fd, offset, SEEK_SET);
+    write(fd, wr_buffer, MFS_BLOCK_SIZE);
+}
+
+void writeINode(int offset, MFS_Inode_t inode_new){
+    int step = sizeof(MFS_Inode_t); /* inode size */
+    cr->endLog += step;
+    lseek(fd, offset, SEEK_SET);
+    write(fd, &inode_new, step);
+}
+
+void writeImap(int offset, MFS_Imap_t imap_new){
+    int step = sizeof(MFS_Imap_t);
+    cr->endLog += step;
+    lseek(fd, offset, SEEK_SET);
+    write(fd, &imap_new, step);
+}
+
+void writeCheckpointRegion(){
+    lseek(fd, 0, SEEK_SET);
+    write(fd, cr, sizeof(MFS_CheckpointRegion_t));
+}
+
 int server_write(int inum, char* buffer, int block){
-
-  int l=0;
-  // int offset = 0, step =0;
-  // int is_old_mp = 0, is_old_nd = 0, is_old_block = 0;
-  // int fp_mp = -1, fp_nd = -1, fp_block = -1;
-
   MFS_Inode_t inode;
   MFS_Imap_t imap;
   MFS_Inode_t inode_new;
 
-  if (sanityCheck(inum, block) == -1) 
-    return -1;
+  if (sanityCheckINum(inum) == -1) return -1;
+  if (sanityCheckBlock(block) == -1) return -1;
 
-  /* generate clean buffer */
   char *ip = buffer;
   char wr_buffer[MFS_BLOCK_SIZE];
-  /* gw: wipe out the remaining bytes, if any */
-  for (int i = 0/*, ip = buffer*/; i < MFS_BLOCK_SIZE; i++) {
+  for (int i = 0; i < MFS_BLOCK_SIZE; i++) {
     if( ip != NULL ) {
       wr_buffer[i] = *ip;
       ip++;
@@ -165,45 +145,40 @@ int server_write(int inum, char* buffer, int block){
     }
   }
 
-  /* set default offset if not old mp */
   int offset = cr->endLog;
   int writeToLog = 0;
   int imapIdx = inum / 16;
   int imapDiskAddress =  cr->imap[imapIdx];
+  int inodeIdx = 0;
   if (imapDiskAddress != -1) {
     lseek(fd, imapDiskAddress, SEEK_SET);
     read(fd, &imap, sizeof(MFS_Imap_t));
-    // is_old_mp = 1;
-    int inodeInd = inum % IMAP_PIECE_SIZE; 
-    int inodeDiskAddress = imap.inodes[inodeInd]; 
-    offset = -1;
+    inodeIdx = inum % IMAP_PIECE_SIZE; 
+    int inodeDiskAddress = imap.inodes[inodeIdx]; 
+
     if (inodeDiskAddress != -1){
       lseek(fd, inodeDiskAddress, SEEK_SET);
       read(fd, &inode, sizeof(MFS_Inode_t));
-      if(inode.type != MFS_REGULAR_FILE) {
+      if (inode.type != MFS_REGULAR_FILE) {
         perror("server_write: not a regular file_4");
         return -1;
       }
-      offset = inode.data[block];
-      cr->endLog += 4096;
-      lseek(fd, offset, SEEK_SET);
-      write(fd, wr_buffer, MFS_BLOCK_SIZE);
+      // offset = inode.data[block];
+      writeDataBlock(offset, wr_buffer);
       inode_new.size = (block +1) * MFS_BLOCK_SIZE;
       inode_new.type = inode.type;
       for (int i = 0; i < 14; i++) 
         inode_new.data[i] = inode.data[i]; /* copy data from old nd */
-      // inode_new.data[block] = offset;
-    } else{
+      inode_new.data[block] = offset;
+    } else {
         writeToLog = 1;
     }
-  } else{
+  } else {
     writeToLog = 1;
   }
 
   if (writeToLog) {
-    cr->endLog += 4096;
-    lseek(fd, offset, SEEK_SET);
-    write(fd, wr_buffer, MFS_BLOCK_SIZE);
+    writeDataBlock(offset, wr_buffer);
     inode_new.size = 0;
     //    nd_new.type = MFS_DIRECTORY;			  /* gw: tbc */
     inode_new.type = MFS_REGULAR_FILE;		  /* gw: tbc, likely this because write dont apply to dir */
@@ -212,10 +187,7 @@ int server_write(int inum, char* buffer, int block){
   }
 
   offset = cr->endLog;	/* after the latestly created block */
-  int step = sizeof(MFS_Inode_t); /* inode size */
-  cr->endLog += step;
-  lseek(fd, offset, SEEK_SET);
-  write(fd, &inode_new, step);
+  writeInode(offset, inode_new);
 
   MFS_Imap_t imap_new;
   if (imapDiskAddress != -1) {
@@ -225,45 +197,32 @@ int server_write(int inum, char* buffer, int block){
     for(int i = 0; i< IMAP_PIECE_SIZE; i++) 
       imap_new.inodes[i] = -1 ; /* copy old mp's data, mp is still in memory */
   }
-  imap_new.inodes[l] = offset; 
+  imap_new.inodes[inodeIdx] = offset; 
 
   offset = cr->endLog;
-  step = sizeof(MFS_Imap_t); /* inode size */
-  cr->endLog += step;
-  lseek(fd, offset, SEEK_SET);
-  write(fd, &imap_new, step);
-
+  writeIMap(offset, imap_new);
   cr->imap[imapIdx] = offset; 	/* gw: fp_mp_new */
-  lseek(fd, 0, SEEK_SET);
-  write(fd, cr, sizeof(MFS_CheckpointRegion_t));
+  writeCheckpointRegion();
   fsync(fd);
   return 0;
 }
 
 int server_stat(int inum, MFS_Stat_t* m){
-  if(inum < 0 || inum >= TOTAL_NUM_INODES) {
-    perror("server_stat: invalid inum_1");
-    return -1;
-  }
+  if (sanityCheckINum(inum) == -1)return -1;
   MFS_Inode_t currInode;
-  if (getOffsets(inum, &currInode) == -1)
+  if (findPopulateInode(inum, &currInode) == -1)
     return -1;
 
   m->size = currInode.size;
   m->type = currInode.type;
-
   return 0;
 }
 
 int server_creat(int pinum, int type, char* name){
-  if(pinum < 0 || pinum >= 4096) {
-    perror("server_creat: invalid pinum_1");
-    return -1;
-  }
+  if (sanityCheck(pinum) == -1)return -1;
   int len_name = 0;
-  for(int i=0; name[i] != '\0'; i++, len_name ++)
-    ;
-  if(len_name > LEN_NAME) {
+  for (int i=0; name[i] != '\0'; i++, len_name++);
+  if (len_name > LEN_NAME) {
     perror("server_creat: name too long_1");
     return -1;
   }
@@ -272,13 +231,116 @@ int server_creat(int pinum, int type, char* name){
   if(server_lookup(pinum, name) != -1) {
     return 0;
   }
+
   MFS_Inode_t currInode;
-  int rc = getOffsets(pinum, &currInode);
-  /* assert dir */
-  if(rc != 0 || currInode.type != MFS_DIRECTORY) {
-    perror("server_creat: invalid pinum_4");
-    return -1;
+  if (findPopulateInode(pinum, &currInode) == -1)return -1;
+  if (currInode.type != MFS_DIRECTORY)return -1;
+
+
+  int free_inum = -1;
+  int is_free_inum_found = 0;
+  MFS_Imap_t imap;
+  MFS_Imap_t mp_new;
+  int imapIdx;
+  int inodeIdx;
+  for (int i=0; i < 256; i++) {
+    imapIdx =  cr->imap[i];
+    if (imapIdx != -1) {
+      lseek(fd, imapIdx, SEEK_SET);
+      read(fd, &imap, sizeof(MFS_Imap_t));
+      for (int j=0; j<16; j++) {
+        inodeIdx = imap.inodes[j]; /* gw: fp denotes file pointer (location within a file) */
+        if (inodeIdx == -1) {
+          free_inum = i*IMAP_PIECE_SIZE + j;
+          is_free_inum_found = 1;
+          break;
+        }
+      }
+    } else {
+      inodeIdx = 0;
+      for(int j = 0; j< IMAP_PIECE_SIZE; j++) 
+        mp_new.inodes[j] = -1 ; /* copy old mp's data, mp is still in memory */
+      free_inum = i*IMAP_PIECE_SIZE;
+      is_free_inum_found = 1;
+    }
+    if (is_free_inum_found) break;
   }
+    
+  char data_buf[4096];
+  char newbuf[4096];
+  MFS_DirDataBlock_t* dir;
+  MFS_Inode_t* newParInode = (MFS_Inode_t*)malloc(sizeof(MFS_Inode_t));
+  newParInode->size = currInode.size;
+  newParInode->type = currInode.type;
+  for (int i = 0; i < 14; i++){
+    newParInode->data[i] = currInode.data[i];
+  }
+
+  int offset = cr->endLog;
+  MFS_Inode_t newInode;
+  newInode.type = type;
+  newInode.size = 0; 
+  for (int i = 0; i < 14; i++){
+    newInode.data[i] = -1;
+  }
+  if (type == MFS_DIRECTORY){
+    char data_buf[MFS_BLOCK_SIZE]; 
+
+    MFS_DirDataBlock_t* dir_buf = (MFS_DirDataBlock_t*)data_buf;
+    strcpy(dir_buf->entries[0].name, ".");
+    dir_buf->entries[0].inum = free_inum;//populate
+    strcpy(dir_buf->entries[1].name, "..");
+    dir_buf->entries[1].inum = pinum;//populate
+    for(int i=2; i< 128; i++){
+      strcpy(dir_buf->entries[i].name, "\0");
+      dir_buf->entries[i].inum = -1;
+    }
+    writeDataBlock(offset, data_buf);
+    newInode.data[0] = offset;    
+  }
+
+  int done = 0;
+  int emptyIdx;
+  for (int i = 0; i < 14 && done != 1; i++) {
+    emptyIdx = i;
+    if (newParInode->data[i] != -1){
+      lseek(fd, newParInode->data[i], SEEK_SET);
+      read(fd, data_buf, MFS_BLOCK_SIZE);
+      dir = (MFS_DirDataBlock_t*)data_buf;
+      for (int i=0; i< 128 && done != -1; i++){
+        if (dir->entries[i].inum == -1){
+          strcpy(dir->entries[i].name, name);
+          dir->entries[i].inum = free_inum;
+          done = 1;
+        }
+      }
+    } else {
+      dir = (MFS_DirDataBlock_t*)data_buf;
+      strcpy(dir->entries[0].name, name);
+      dir->entries[0].inum = free_inum;
+      for (int i = 1; i< 128; i++){
+        strcpy(dir->entries[i].name, "\0");
+        dir->entries[i].inum = -1;
+      }
+    }
+  }
+  
+  offset = cr->endLog;
+  writeINode(offset, newInode);
+  mp_new.inodes[inodeIdx] = offset;
+  writeIMap(offset, mp_new);
+  cr->imap[imapIdx] = offset;
+  offset = cr->endLog;
+  writeDataBlock(offset, data_buf);
+  newParInode->data[emptyIdx] = offset;
+  offset = cr->endLog;
+  writeINode(offset, *newParInode);
+  imap.inodes[inodeIdx] = offset;
+  offset = cr->endLog;
+  writeIMap(offset, imap);
+  cr->imap[imapIdx] = offset;// check
+  writeCheckpointRegion();
+  fsync(fd);
   return 0;
 }
 
@@ -391,5 +453,3 @@ int main(int argc, char *argv[]) {
     }
     return 0; 
 }
-    
-
