@@ -52,9 +52,12 @@ int UDP_Send( MFS_message_t *tx, MFS_message_t *rx, char *hostname, int port)
                 return 0;
             }
         } else {
+            printf("Hello? %d\n", numTries);
             numTries--;
         }
-    } while(1);
+    } while(numTries > 0);
+    
+    return 0;
 }
 
 int MFS_Init(char *hostname, int port) {

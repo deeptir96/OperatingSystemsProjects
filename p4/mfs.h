@@ -18,13 +18,13 @@ typedef struct __MFS_DirEnt_t {
 } MFS_DirEnt_t;
 
 typedef struct __MFS_DirDataBlock_t {
-  MFS_DirEnt_t entries[64];
+  MFS_DirEnt_t entries[128];
 } MFS_DirDataBlock_t;
 
 typedef struct __MFS_Inode_t{
-    int size;
-    int type;
-    int data[14]; 
+    int size; // the number of the last byte in the file
+    int type; // MFS_DIRECTORY or MFS_REGULAR
+    int data[14]; // 14 direct pointers
 } MFS_Inode_t;
 
 typedef struct __MFS_InodeMap_t{
