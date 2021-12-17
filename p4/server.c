@@ -22,6 +22,7 @@ int sanityCheckINum(int inum){
     perror("server_write: invalid inum_1");
     return -1;
   }
+  return 1;
 }
 
 int sanityCheckBlock(int block){
@@ -60,7 +61,7 @@ int findPopulateInode(int inum, MFS_Inode_t *currInode) {
 }
 
 int server_lookup(int pinum, char *name) {
-    if (sanityCheck(pinum) == -1) return -1;
+    if (sanityCheckINum(pinum) == -1) return -1;
 
     MFS_Inode_t currInode;
     if (findPopulateInode(pinum, &currInode) == -1) return -1;
@@ -187,7 +188,7 @@ int server_write(int inum, char* buffer, int block){
   }
 
   offset = cr->endLog;	/* after the latestly created block */
-  writeInode(offset, inode_new);
+  writeINode(offset, inode_new);
 
   MFS_Imap_t imap_new;
   if (imapDiskAddress != -1) {
@@ -200,7 +201,7 @@ int server_write(int inum, char* buffer, int block){
   imap_new.inodes[inodeIdx] = offset; 
 
   offset = cr->endLog;
-  writeIMap(offset, imap_new);
+  writeImap(offset, imap_new);
   cr->imap[imapIdx] = offset; 	/* gw: fp_mp_new */
   writeCheckpointRegion();
   fsync(fd);
@@ -219,7 +220,7 @@ int server_stat(int inum, MFS_Stat_t* m){
 }
 
 int server_creat(int pinum, int type, char* name){
-  if (sanityCheck(pinum) == -1)return -1;
+  if (sanityCheckINum(pinum) == -1)return -1;
   int len_name = 0;
   for (int i=0; name[i] != '\0'; i++, len_name++);
   if (len_name > LEN_NAME) {
@@ -267,7 +268,7 @@ int server_creat(int pinum, int type, char* name){
   }
     
   char data_buf[4096];
-  char newbuf[4096];
+  // char newbuf[4096];
   MFS_DirDataBlock_t* dir;
   MFS_Inode_t* newParInode = (MFS_Inode_t*)malloc(sizeof(MFS_Inode_t));
   newParInode->size = currInode.size;
@@ -328,7 +329,7 @@ int server_creat(int pinum, int type, char* name){
   offset = cr->endLog;
   writeINode(offset, newInode);
   mp_new.inodes[inodeIdx] = offset;
-  writeIMap(offset, mp_new);
+  writeImap(offset, mp_new);
   cr->imap[imapIdx] = offset;
   offset = cr->endLog;
   writeDataBlock(offset, data_buf);
@@ -337,7 +338,7 @@ int server_creat(int pinum, int type, char* name){
   writeINode(offset, *newParInode);
   imap.inodes[inodeIdx] = offset;
   offset = cr->endLog;
-  writeIMap(offset, imap);
+  writeImap(offset, imap);
   cr->imap[imapIdx] = offset;// check
   writeCheckpointRegion();
   fsync(fd);
