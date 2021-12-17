@@ -17,6 +17,10 @@ typedef struct __MFS_DirEnt_t {
     int  inum;      // inode number of entry (-1 means entry not used)
 } MFS_DirEnt_t;
 
+typedef struct __MFS_DirDataBlock_t {
+  MFS_DirEnt_t entries[64];
+} MFS_DirDataBlock_t;
+
 typedef struct __MFS_Inode_t{
     int size;
     int type;
@@ -51,11 +55,12 @@ typedef struct message {
     char data[MFS_BLOCK_SIZE];
     char name[28];
 } MFS_message_t;
-//typedef struct inodeMap {
-//    int id;
-//    //list of inode mappings
-//    struct *MFS_Inode_t inodes;
-//} MFS_Inode_t;
+
+typedef struct checkpointRegion {
+    int inode_count;
+    int endLog;
+    int imap[256]; // 4096 / 16
+} MFS_CheckpointRegion_t;
 
 
 int MFS_Init(char *hostname, int port);

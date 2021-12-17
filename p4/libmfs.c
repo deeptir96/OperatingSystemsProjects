@@ -17,12 +17,12 @@ struct sockaddr_in addrSnd;
 int UDP_Send( MFS_message_t *tx, MFS_message_t *rx, char *hostname, int port)
 {
 
-    // int sd = UDP_Open(0);
-    // if(sd < -1)
-    // {
-    //     perror("udp_send: failed to open socket.");
-    //     return -1;
-    // }
+    int sd = UDP_Open(0);
+    if(sd < -1)
+    {
+        perror("udp_send: failed to open socket.");
+        return -1;
+    }
 
     struct sockaddr_in addr, addr2;
     int rc = UDP_FillSockAddr(&addr, hostname, port);
@@ -37,44 +37,37 @@ int UDP_Send( MFS_message_t *tx, MFS_message_t *rx, char *hostname, int port)
     tv.tv_sec=3;
     tv.tv_usec=0;
 
-    int trial_limit = 5;	/* trial = 5 */
+    int numTries = 5;
     do {
         FD_ZERO(&rfds);
         FD_SET(sd,&rfds);
         UDP_Write(sd, &addr, (char*)tx, sizeof(MFS_message_t));
-        if(select(sd+1, &rfds, NULL, NULL, &tv))
-        {
+        printf("Sent message to server via UDP\n");
+        if(select(sd+1, &rfds, NULL, NULL, &tv)) {
             rc = UDP_Read(sd, &addr2, (char*)rx, sizeof(MFS_message_t));
+            printf("UDP_Recv size = %d\n", rc);
             if(rc > 0)
             {
                 UDP_Close(sd);
                 return 0;
             }
-        }else {
-            trial_limit--;
+        } else {
+            numTries--;
         }
-    }while(1);
+    } while(1);
 }
 
 int MFS_Init(char *hostname, int port) {
     //printf("Hostname = %s, port = %d\n", hostname, port);
+    printf("REQ_INIT\n");
     host = strdup(hostname);
     portNum = port;
-    sd = UDP_Open(20100);
-    if(sd < -1)
-    {
-        perror("mfs_init: failed to open socket.");
-        return -1;
-    }
-    
-    // int rc = UDP_FillSockAddr(&addrSnd, "localhost", port);
-    //portNum = port;
-    
-    return 0;//rc;
+
+    return 0;
 }
 
 int MFS_Lookup(int pinum, char *name) {
-// check invalid pinum and name
+    // check invalid pinum and name
     MFS_message_t send, rcv;
     
     send.pinum = pinum;
@@ -95,25 +88,94 @@ int MFS_Stat(int inum, MFS_Stat_t *m) {
     if(rc != 0) {
         return -1;
     }
-    m->type = rcv.type;
-    m->size = rcv.size;
+    m->type = send.type;
+    m->size = send.size;
     return 0;
 }
 
 int MFS_Write(int inum, char *buffer, int block) {
-    return 0;
+    // check inum, block, and type
+    MFS_Stat_t stat;
+    int stat_rc = MFS_Stat(inum, &stat);
+    if(stat_rc != 0 || stat.type != 1) {
+        return -1;
+    }
+    MFS_message_t send, rcv;
+    send.inum = inum;
+    send.block = block;
+    send.type = stat.type;
+    send.requestType = REQ_WRITE;
+    strcpy(send.data, buffer);
+    for(int i=0; i<MFS_BLOCK_SIZE; i++)
+	  send.data[i]=buffer[i];
+	
+	if(UDP_Send( &send, &rcv, host, portNum) < 0)
+		return -1;
+	
+	return rcv.inum;
 }
+
+//probably need to change rc in all fns below
 int MFS_Read(int inum, char *buffer, int block){
-    return 0;
+    MFS_message_t tx;
+    tx.inum = inum;
+    tx.block = block;
+    tx.requestType = REQ_READ;
+
+    MFS_message_t rx;	
+    if(UDP_Send( &tx, &rx, host, portNum) < 0)
+        return -1;
+
+    if(rx.inum > -1) {
+        for(int i=0; i<MFS_BLOCK_SIZE; i++)
+        buffer[i] = rx.data[i];
+    }
+
+    return rx.inum;
 }
+
 int MFS_Creat(int pinum, int type, char *name){
-    return 0;
+    if(strlen(name) > 60 || name == NULL)
+		return -1;
+
+	MFS_message_t tx;
+
+	strcpy(tx.name, name);
+	tx.inum = pinum;
+	tx.type = type;
+	tx.requestType = REQ_CREAT;
+
+	MFS_message_t rx;	
+	if(UDP_Send( &tx, &rx, host, portNum) < 0)
+		return -1;
+
+	return rx.inum;
 }
+
 int MFS_Unlink(int pinum, char *name) {
-    return 0;
+    if(strlen(name) > 60 || name == NULL)
+		return -1;
+	
+	MFS_message_t tx;
+
+	tx.inum = pinum;
+	tx.requestType = REQ_UNLINK;
+	strcpy(tx.name, name);
+
+	MFS_message_t rx;	
+	if(UDP_Send( &tx, &rx, host, portNum ) < 0)
+		return -1;
+
+	return rx.inum;
 }
+
 int MFS_Shutdown() {
-    //persist inodeMap to disk
-    exit(0);
-    return 0;
+    MFS_message_t tx;
+	tx.requestType = REQ_SHUTDOWN;
+
+	MFS_message_t rx;
+	if(UDP_Send( &tx, &rx, host, portNum) < 0)
+		return -1;
+	
+	return 0;
 }
