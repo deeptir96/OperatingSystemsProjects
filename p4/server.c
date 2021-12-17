@@ -354,7 +354,7 @@ int main(int argc, char *argv[]) {
                 // reply.size = 28;
                 // reply.type = 1;
                 printf("REQ_WRITE\n");
-                int rc = server_write(message.inum, &message.data[0], message.block);
+                int rc = server_write(message.inum, message.data, message.block);
                 if(rc != 0) {
                   perror("server_write: error");
                   return -1;
@@ -362,7 +362,7 @@ int main(int argc, char *argv[]) {
                 rc = UDP_Write(sd, &addr, (char *) &message, sizeof(MFS_message_t));
             } else if(message.requestType == REQ_READ) {
                 printf("REQ_READ\n");
-                int rc = server_read(message.inum, &message.data[0], message.block);
+                int rc = server_read(message.inum, message.data, message.block);
                 if(rc != 0) {
                   perror("server_read: error");
                   return -1;
@@ -370,6 +370,9 @@ int main(int argc, char *argv[]) {
                 // reply.size = 28;
                 // reply.type = 1;
                 rc = UDP_Write(sd, &addr, (char *) &message, sizeof(MFS_message_t));
+            } else if(message.requestType == REQ_UNLINK) {
+                printf("UNLINK");
+                // int rc = server_unlink(message.pinum, &message.name[0]);
             } else if(message.requestType == REQ_SHUTDOWN) { 
                 printf("REQ_SHUTDOWN\n");
 
