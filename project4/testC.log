@@ -1,0 +1,618 @@
+starting build
+
+**********************************************************************
+
+Test build
+build project using make
+
+**********************************************************************
+Trying to build project using make
+make
+make: Nothing to be done for 'all'.
+
+
+test build PASSED
+ (build project using make)
+
+starting shutdown
+
+**********************************************************************
+
+Test shutdown
+init server and client then call shutdown
+
+**********************************************************************
+Starting server on port 7811
+/tmp/tmp0fGxDx/p/server 7811 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test shutdown FAILED
+ (init server and client then call shutdown)
+ Unexpected exception [Errno 3] No such process
+
+starting creat
+
+**********************************************************************
+
+Test creat
+creat a file and check with lookup
+
+**********************************************************************
+Starting server on port 7422
+/tmp/tmp0fGxDx/p/server 7422 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test creat FAILED
+ (creat a file and check with lookup)
+ Unexpected exception [Errno 3] No such process
+
+starting write
+
+**********************************************************************
+
+Test write
+write then read one block
+
+**********************************************************************
+Starting server on port 9955
+/tmp/tmp0fGxDx/p/server 9955 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test write FAILED
+ (write then read one block)
+ Unexpected exception [Errno 3] No such process
+
+starting stat
+
+**********************************************************************
+
+Test stat
+stat a regular file
+
+**********************************************************************
+Starting server on port 7666
+/tmp/tmp0fGxDx/p/server 7666 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test stat FAILED
+ (stat a regular file)
+ Unexpected exception [Errno 3] No such process
+
+starting overwrite
+
+**********************************************************************
+
+Test overwrite
+overwrite a block
+
+**********************************************************************
+Starting server on port 7600
+/tmp/tmp0fGxDx/p/server 7600 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test overwrite FAILED
+ (overwrite a block)
+ Unexpected exception [Errno 3] No such process
+
+starting maxfile
+
+**********************************************************************
+
+Test maxfile
+write largest possible file
+
+**********************************************************************
+Starting server on port 8789
+/tmp/tmp0fGxDx/p/server 8789 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test maxfile FAILED
+ (write largest possible file)
+ Unexpected exception [Errno 3] No such process
+
+starting maxfile2
+
+**********************************************************************
+
+Test maxfile2
+write more blocks than possible
+
+**********************************************************************
+Starting server on port 8019
+/tmp/tmp0fGxDx/p/server 8019 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test maxfile2 FAILED
+ (write more blocks than possible)
+ Unexpected exception [Errno 3] No such process
+
+starting sparse
+
+**********************************************************************
+
+Test sparse
+write first and last block
+
+**********************************************************************
+Starting server on port 5838
+/tmp/tmp0fGxDx/p/server 5838 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test sparse FAILED
+ (write first and last block)
+ Unexpected exception [Errno 3] No such process
+
+starting stat2
+
+**********************************************************************
+
+Test stat2
+stat a sparse file
+
+**********************************************************************
+Starting server on port 6998
+/tmp/tmp0fGxDx/p/server 6998 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test stat2 FAILED
+ (stat a sparse file)
+ Unexpected exception [Errno 3] No such process
+
+starting dir1
+
+**********************************************************************
+
+Test dir1
+check root for dot entries
+
+**********************************************************************
+Starting server on port 5800
+/tmp/tmp0fGxDx/p/server 5800 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test dir1 FAILED
+ (check root for dot entries)
+ Unexpected exception [Errno 3] No such process
+
+starting dir2
+
+**********************************************************************
+
+Test dir2
+create a new directory and check it
+
+**********************************************************************
+Starting server on port 5701
+/tmp/tmp0fGxDx/p/server 5701 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test dir2 FAILED
+ (create a new directory and check it)
+ Unexpected exception [Errno 3] No such process
+
+starting baddir
+
+**********************************************************************
+
+Test baddir
+try to create a file with a file parent inode
+
+**********************************************************************
+Starting server on port 5218
+/tmp/tmp0fGxDx/p/server 5218 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test baddir FAILED
+ (try to create a file with a file parent inode)
+ Unexpected exception [Errno 3] No such process
+
+starting baddir2
+
+**********************************************************************
+
+Test baddir2
+try to lookup a file with a file parent inode
+
+**********************************************************************
+Starting server on port 6653
+/tmp/tmp0fGxDx/p/server 6653 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test baddir2 FAILED
+ (try to lookup a file with a file parent inode)
+ Unexpected exception [Errno 3] No such process
+
+starting unlink
+
+**********************************************************************
+
+Test unlink
+unlink a file
+
+**********************************************************************
+Starting server on port 9804
+/tmp/tmp0fGxDx/p/server 9804 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test unlink FAILED
+ (unlink a file)
+ Unexpected exception [Errno 3] No such process
+
+starting unlink2
+
+**********************************************************************
+
+Test unlink2
+unlink a directory
+
+**********************************************************************
+Starting server on port 7274
+/tmp/tmp0fGxDx/p/server 7274 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test unlink2 FAILED
+ (unlink a directory)
+ Unexpected exception [Errno 3] No such process
+
+starting empty
+
+**********************************************************************
+
+Test empty
+unlink a non-empty directory
+
+**********************************************************************
+Starting server on port 5149
+/tmp/tmp0fGxDx/p/server 5149 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test empty FAILED
+ (unlink a non-empty directory)
+ Unexpected exception [Errno 3] No such process
+
+starting name
+
+**********************************************************************
+
+Test name
+name too long
+
+**********************************************************************
+Starting server on port 8801
+/tmp/tmp0fGxDx/p/server 8801 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test name FAILED
+ (name too long)
+ Unexpected exception [Errno 3] No such process
+
+starting persist
+
+**********************************************************************
+
+Test persist
+restart server after creating a file
+
+**********************************************************************
+Starting server on port 9383
+/tmp/tmp0fGxDx/p/server 9383 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test persist FAILED
+ (restart server after creating a file)
+ Unexpected exception [Errno 3] No such process
+
+starting drop
+
+**********************************************************************
+
+Test drop
+drop every other packet sent by client
+
+**********************************************************************
+Trying to clean project using make clean
+make clean
+rm -f ./client ./server *.o libmfs.so
+Trying to build project using make
+make
+gcc -Wall -Werror -g -c -fPIC libmfs.c
+gcc -Wall -Werror -g -shared -Wl,-soname,libmfs.so -o libmfs.so libmfs.o udp.c -lc
+/usr/bin/ld: /tmp/ccvp9A48.o: relocation R_X86_64_PC32 against symbol `stderr@@GLIBC_2.2.5' can not be used when making a shared object; recompile with -fPIC
+/usr/bin/ld: final link failed: bad value
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:19: libmfs.so] Error 1
+Starting server on port 5706
+/tmp/tmp0fGxDx/p/server 5706 testimage
+OSError: [Errno 2] No such file or directory
+Trying to clean project using make clean
+make clean
+rm -f ./client ./server *.o libmfs.so
+Trying to build project using make
+make
+gcc -Wall -Werror -g -c -fPIC libmfs.c
+gcc -Wall -Werror -g -shared -Wl,-soname,libmfs.so -o libmfs.so libmfs.o udp.c -lc
+gcc -Wall -Werror -g -c server.c
+gcc -Wall -Werror -g -o server server.o -L. -lmfs udp.c
+
+
+test drop FAILED
+ (drop every other packet sent by client)
+ make failed (error 2)
+ required file 'server' does not exist after make
+ Unexpected exception [Errno 2] No such file or directory
+
+starting bigdir
+
+**********************************************************************
+
+Test bigdir
+create a directory with max number of files
+
+**********************************************************************
+Starting server on port 8118
+/tmp/tmp0fGxDx/p/server 8118 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test bigdir FAILED
+ (create a directory with max number of files)
+ Unexpected exception [Errno 3] No such process
+
+starting bigdir2
+
+**********************************************************************
+
+Test bigdir2
+create a directory with more files than possible
+
+**********************************************************************
+Starting server on port 8450
+/tmp/tmp0fGxDx/p/server 8450 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test bigdir2 FAILED
+ (create a directory with more files than possible)
+ Unexpected exception [Errno 3] No such process
+
+starting deep
+
+**********************************************************************
+
+Test deep
+create many deeply nested directories
+
+**********************************************************************
+Starting server on port 8553
+/tmp/tmp0fGxDx/p/server 8553 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test deep FAILED
+ (create many deeply nested directories)
+ Unexpected exception [Errno 3] No such process
+
+starting complex
+
+**********************************************************************
+
+Test complex
+a long sequence of creats and writes followed by a check
+
+**********************************************************************
+Starting server on port 6712
+/tmp/tmp0fGxDx/p/server 6712 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test complex FAILED
+ (a long sequence of creats and writes followed by a check)
+ Unexpected exception [Errno 3] No such process
+
+starting complex2
+
+**********************************************************************
+
+Test complex2
+a long sequence of creats and writes followed by a check
+
+**********************************************************************
+Starting server on port 10000
+/tmp/tmp0fGxDx/p/server 10000 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test complex2 FAILED
+ (a long sequence of creats and writes followed by a check)
+ Unexpected exception [Errno 3] No such process
+
+starting persist2
+
+**********************************************************************
+
+Test persist2
+restart server after creating many dirs and files
+
+**********************************************************************
+Starting server on port 5170
+/tmp/tmp0fGxDx/p/server 5170 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test persist2 FAILED
+ (restart server after creating many dirs and files)
+ Unexpected exception [Errno 3] No such process
+
+starting free
+
+**********************************************************************
+
+Test free
+check that inodes and direcrtory entries are freed
+
+**********************************************************************
+Starting server on port 7666
+/tmp/tmp0fGxDx/p/server 7666 testimage
+/tmp/tmp0fGxDx/p/server: error while loading shared libraries: libmfs.so: cannot open shared object file: No such file or directory
+OSError: [Errno 3] No such process
+
+
+test free FAILED
+ (check that inodes and direcrtory entries are freed)
+ Unexpected exception [Errno 3] No such process
+
+**********************************************************************
+Summary:
+test build PASSED
+ (build project using make)
+
+test shutdown FAILED
+ (init server and client then call shutdown)
+ Unexpected exception [Errno 3] No such process
+
+test creat FAILED
+ (creat a file and check with lookup)
+ Unexpected exception [Errno 3] No such process
+
+test write FAILED
+ (write then read one block)
+ Unexpected exception [Errno 3] No such process
+
+test stat FAILED
+ (stat a regular file)
+ Unexpected exception [Errno 3] No such process
+
+test overwrite FAILED
+ (overwrite a block)
+ Unexpected exception [Errno 3] No such process
+
+test maxfile FAILED
+ (write largest possible file)
+ Unexpected exception [Errno 3] No such process
+
+test maxfile2 FAILED
+ (write more blocks than possible)
+ Unexpected exception [Errno 3] No such process
+
+test sparse FAILED
+ (write first and last block)
+ Unexpected exception [Errno 3] No such process
+
+test stat2 FAILED
+ (stat a sparse file)
+ Unexpected exception [Errno 3] No such process
+
+test dir1 FAILED
+ (check root for dot entries)
+ Unexpected exception [Errno 3] No such process
+
+test dir2 FAILED
+ (create a new directory and check it)
+ Unexpected exception [Errno 3] No such process
+
+test baddir FAILED
+ (try to create a file with a file parent inode)
+ Unexpected exception [Errno 3] No such process
+
+test baddir2 FAILED
+ (try to lookup a file with a file parent inode)
+ Unexpected exception [Errno 3] No such process
+
+test unlink FAILED
+ (unlink a file)
+ Unexpected exception [Errno 3] No such process
+
+test unlink2 FAILED
+ (unlink a directory)
+ Unexpected exception [Errno 3] No such process
+
+test empty FAILED
+ (unlink a non-empty directory)
+ Unexpected exception [Errno 3] No such process
+
+test name FAILED
+ (name too long)
+ Unexpected exception [Errno 3] No such process
+
+test persist FAILED
+ (restart server after creating a file)
+ Unexpected exception [Errno 3] No such process
+
+test drop FAILED
+ (drop every other packet sent by client)
+ make failed (error 2)
+ required file 'server' does not exist after make
+ Unexpected exception [Errno 2] No such file or directory
+
+test bigdir FAILED
+ (create a directory with max number of files)
+ Unexpected exception [Errno 3] No such process
+
+test bigdir2 FAILED
+ (create a directory with more files than possible)
+ Unexpected exception [Errno 3] No such process
+
+test deep FAILED
+ (create many deeply nested directories)
+ Unexpected exception [Errno 3] No such process
+
+test complex FAILED
+ (a long sequence of creats and writes followed by a check)
+ Unexpected exception [Errno 3] No such process
+
+test complex2 FAILED
+ (a long sequence of creats and writes followed by a check)
+ Unexpected exception [Errno 3] No such process
+
+test persist2 FAILED
+ (restart server after creating many dirs and files)
+ Unexpected exception [Errno 3] No such process
+
+test free FAILED
+ (check that inodes and direcrtory entries are freed)
+ Unexpected exception [Errno 3] No such process
+
+Passed 1 of 27 tests.
+Overall 1 of 27
